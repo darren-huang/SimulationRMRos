@@ -29,7 +29,7 @@ def translate_y(y):
 
 
 def callback(dynObstacles):
-	env.add_temp_obstacles([(translate_x(obj.x), translate_y(obj.y), obj.width, obj.height) for obj in dynObstacles.lists])
+	env.env.add_temp_obstacles([(translate_x(obj.x), translate_y(obj.y), obj.width, obj.height) for obj in dynObstacles.lists])
 
 rospy.init_node('sim_sync', anonymous=True)
 pub = rospy.Publisher('short_term_position', Path, queue_size=10)

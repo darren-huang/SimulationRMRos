@@ -274,7 +274,7 @@ class Move(Action):
             if len(self.path) > 2 or robot.env.direct_reachable_curr_angle(robot.center, self.path[-1], robot):
                 self.path = self.path[1:]
 
-        print(self.path[0])
+        # print(self.path[0])
 
         #move to first waypoint of path
         #  and robot.env.direct_reachable_curr_angle(robot.center, self.path[0], robot)
