@@ -272,10 +272,10 @@ class RobomasterEnv(gym.Env):
             char.act()
 
         # TODO printing for robots
-        for robot in self.characters['robots']:
-            if robot.team.name == "RED":
-                print(robot.team.name + ": low_left = " + str(robot.bottom_left) +
-                      " || high_right = " + str(robot.bottom_left.move(robot.width, robot.height)))
+        # for robot in self.characters['robots']:
+        #     if robot.team.name == "RED":
+        #         print(robot.team.name + ": low_left = " + str(robot.bottom_left) +
+        #               " || high_right = " + str(robot.bottom_left.move(robot.width, robot.height)))
                 # closest_point = min(self.network_points, key=lambda x: robot.center.dis(x))
                 # print(robot.team.name + " is closest to: " + str(closest_point))
                 # geom = rendering.Circle(closest_point, 5)
@@ -303,6 +303,14 @@ class RobomasterEnv(gym.Env):
             geoms = char.render()
             for geom in geoms:
                 self.viewer.add_onetime(geom)
+
+        #for dynamic obstacles / temp obstacles
+        obst = self.characters['obstacles']
+        for char in obst[len(obst) - self.num_temp_obstacles:]:
+            geoms = char.render()
+            for geom in geoms:
+                self.viewer.add_onetime(geom)
+
         self.viewer.add_onetime_text("Time: {0} seconds".format(round(self.game_time, 1)), \
                                      10, 12, self.height - 12)
 
