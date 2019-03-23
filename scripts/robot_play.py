@@ -29,6 +29,7 @@ def translate_y(y):
 
 
 def callback(dynObstacles):
+	rospy.loginfo("msgs:{}".format(dynObstacles))
 	env.add_temp_obstacles([(translate_x(obj.x), translate_y(obj.y), obj.width, obj.height) for obj in dynObstacles.lists])
 
 rospy.init_node('sim_sync', anonymous=True)
@@ -74,7 +75,7 @@ for i in range(total_rounds):
 
 	path = Path(None, [pt])
 	pub.publish(path)
-	rospy.loginfo(path)
+	#rospy.loginfo(path)
 	rate.sleep()
 
 	# time.sleep(0.01)
