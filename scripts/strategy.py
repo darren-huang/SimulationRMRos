@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-import keyboard
+# import keyboard
 import pygame
 from pyglet.window import key
 
@@ -215,103 +215,103 @@ class AttackWithR(Strategy):
     pass
 
 
-class KeyboardPyglet(Strategy):
+# class KeyboardPyglet(Strategy):
+#
+#     def __init__(self, controls, ignore_angle):
+#         Strategy.__init__(self)
+#         self.controls = controls
+#         [self.left, self.down, self.right, self.up, self.turnleft, self.turnright,
+#             self.refill] = controls
+#         self.shooting = False
+#         self.ignore_angle = ignore_angle
+#
+#     def decide(self, robot):
+#         board_ang = 90
+#         if not robot.env.rendering:
+#             return
+#         window = robot.env.viewer.window
+#         actions = []
+#
+#         @window.event
+#         def on_key_press(symbol, modifier):
+#             if symbol == key.R:
+#                 if robot.team.loading_zone.aligned(robot):
+#                     RefillCommand().resolve(robot)
+#                 else:
+#                     Move(robot.team.loading_zone.center).resolve(robot)
+#
+#         if keyboard.is_pressed(self.turnleft):
+#             actions.append(RotateLeft(robot.max_rotation_speed))
+#         if keyboard.is_pressed(self.turnright):
+#             actions.append(RotateRight(robot.max_rotation_speed))
+#         if keyboard.is_pressed(self.up):
+#             actions.append(MoveForward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if keyboard.is_pressed(self.down):
+#             actions.append(MoveBackward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if keyboard.is_pressed(self.left):
+#             actions.append(MoveLeft(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if keyboard.is_pressed(self.right):
+#             actions.append(MoveRight(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         return actions
 
-    def __init__(self, controls, ignore_angle):
-        Strategy.__init__(self)
-        self.controls = controls
-        [self.left, self.down, self.right, self.up, self.turnleft, self.turnright,
-            self.refill] = controls
-        self.shooting = False
-        self.ignore_angle = ignore_angle
 
-    def decide(self, robot):
-        board_ang = 90
-        if not robot.env.rendering:
-            return
-        window = robot.env.viewer.window
-        actions = []
-
-        @window.event
-        def on_key_press(symbol, modifier):
-            if symbol == key.R:
-                if robot.team.loading_zone.aligned(robot):
-                    RefillCommand().resolve(robot)
-                else:
-                    Move(robot.team.loading_zone.center).resolve(robot)
-
-        if keyboard.is_pressed(self.turnleft):
-            actions.append(RotateLeft(robot.max_rotation_speed))
-        if keyboard.is_pressed(self.turnright):
-            actions.append(RotateRight(robot.max_rotation_speed))
-        if keyboard.is_pressed(self.up):
-            actions.append(MoveForward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if keyboard.is_pressed(self.down):
-            actions.append(MoveBackward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if keyboard.is_pressed(self.left):
-            actions.append(MoveLeft(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if keyboard.is_pressed(self.right):
-            actions.append(MoveRight(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        return actions
-
-
-class KeyboardPygame(Strategy):
-    
-    def __init__(self, controls, ignore_angle):
-        Strategy.__init__(self)
-        [self.left, self.down, self.right, self.up, self.turnleft, self.turnright, \
-            self.refill] = controls
-        self.actions = []
-        self.refilling = False
-        self.ignore_angle = ignore_angle
-
-    def set_instructions(self, actions):
-        self.actions = actions
-        if self.refilling and self.refill not in actions:
-            self.refilling = False
-
-    def decide(self, robot):
-        board_ang = 90
-        if not self.actions:
-            return None
-        actions = []
-        if self.turnleft in self.actions:
-            actions.append(RotateLeft(robot.max_rotation_speed))
-        if self.turnright in self.actions:
-            actions.append(RotateRight(robot.max_rotation_speed))
-        if self.up in self.actions:
-            actions.append(MoveForward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if self.down in self.actions:
-            actions.append(MoveBackward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if self.left in self.actions:
-            actions.append(MoveLeft(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if self.right in self.actions:
-            actions.append(MoveRight(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
-        if self.refill in self.actions:
-            if not self.refilling:
-                self.refilling = True
-                actions.append(RefillCommand())
-        return actions
+# class KeyboardPygame(Strategy):
+#
+#     def __init__(self, controls, ignore_angle):
+#         Strategy.__init__(self)
+#         [self.left, self.down, self.right, self.up, self.turnleft, self.turnright, \
+#             self.refill] = controls
+#         self.actions = []
+#         self.refilling = False
+#         self.ignore_angle = ignore_angle
+#
+#     def set_instructions(self, actions):
+#         self.actions = actions
+#         if self.refilling and self.refill not in actions:
+#             self.refilling = False
+#
+#     def decide(self, robot):
+#         board_ang = 90
+#         if not self.actions:
+#             return None
+#         actions = []
+#         if self.turnleft in self.actions:
+#             actions.append(RotateLeft(robot.max_rotation_speed))
+#         if self.turnright in self.actions:
+#             actions.append(RotateRight(robot.max_rotation_speed))
+#         if self.up in self.actions:
+#             actions.append(MoveForward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if self.down in self.actions:
+#             actions.append(MoveBackward(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if self.left in self.actions:
+#             actions.append(MoveLeft(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if self.right in self.actions:
+#             actions.append(MoveRight(board_ang if self.ignore_angle else robot.angle, robot.max_speed))
+#         if self.refill in self.actions:
+#             if not self.refilling:
+#                 self.refilling = True
+#                 actions.append(RefillCommand())
+#         return actions
 
 class Joystick(Strategy):
 
     refilled = False
-        
+
     def decide(self, robot):
         j = pygame.joystick.Joystick(0)
         j.init()
         coords = [j.get_axis(0), j.get_axis(1), j.get_axis(3)]
         hat = j.get_hat(0)
-        
+
         if not any(hat):
             self.refilled = False
 
         for i in range(len(coords)):
             if float_equals(coords[i], 0, 0.05):
-                coords[i] = 0     
+                coords[i] = 0
         if not any(coords) and not any(hat):
             return None
-        
+
         [right, down, clockwise] = coords
         translation_power, rotation_power = max(abs(right), abs(down)), abs(clockwise)
 

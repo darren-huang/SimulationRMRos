@@ -6,7 +6,7 @@ import numpy as np
 import math
 import heapq
 import cv2
-import keyboard
+# import keyboard
 import pygame
 
 from utils import *
@@ -737,116 +737,116 @@ class AttackWithRadiusRobot(Robot):
     pass
 
 
-class StratChooser(Robot):
-
-    # (void_func, String)
-    # Class
-
-    def __init__(self, env, team, bottom_left, angle=0):
-        Robot.__init__(self, env, team, bottom_left, angle)
-        # self.controls = "01233456789"
-        self.strats = [Attack, DoNothing, BreakLine, SpinAndFire, OnlyReload, GetDefenseBuff, Chase, Patrol]
-        self.strat_class_or_tup, self.strat = None, None
-        self.switch_strat(self.strats[0])
-        self.printed_help = False
-        self.help_key = '0'
-        self.buttons = "123456789"
-
-    def switch_strat(self, tup_or_class):
-        self.strat_class_or_tup = tup_or_class
-        if type(tup_or_class) == tuple:
-            self.strat = tup_or_class[0]()
-        else:
-            self.strat = tup_or_class()
-
-    def strat_get_string(self, tup_or_class):
-        """ is either a tuple of function and string OR is just a class"""
-        if type(tup_or_class) == tuple:
-            return tup_or_class[1]
-        else:
-            return tup_or_class.__name__
-
-    def get_strategy(self):
-        strats = self.strats
-        strats = strats[:len(self.buttons)]
-        # commands = dict([(str(i + 1), v) for i, v in enumerate(strats)])
-        commands = dict([(self.buttons[i], self.strats[i]) for i in range(min(len(self.buttons), len(self.strats)))])
-
-        if keyboard.is_pressed(self.help_key):
-            if not self.printed_help:
-                self.printed_help = True
-                print(self.help_key + " - print strats")
-                for i in commands:
-                    print(i + " - " + self.strat_get_string(commands[i]))
-        else:
-            for i in commands:
-                if keyboard.is_pressed(i):
-                    if self.strat_class_or_tup != commands[i]:
-                        self.printed_help = False
-                        print("Switched to " + self.strat_get_string(commands[i]))
-                        self.switch_strat(commands[i])
-        return self.strat
-
-
-class EnvCommands(StratChooser):
-
-    def __init__(self, env, team, bottom_left, angle=0):
-        Robot.__init__(self, env, team, bottom_left, angle)
-        # self.controls = "01233456789"
-        self.strats = [#DoNothing, BreakLine, Patrol, OnlyReload,
-                       (lambda: env.add_temp_obstacles([(400,250,50,50)]), 'env.add_temp_obstacles([(400,250,50,50)])'),
-                       (lambda: env.add_temp_obstacles([(400, 250, 50, 50),
-                                                        (400, 310, 50, 50),
-                                                        (400, 190, 50, 50),
-                                                        (400, 370, 50, 50),
-                                                        (400, 130, 50, 50)]), 'env.add_temp_obstacles([(400,250,50,50)])'),
-            (lambda: env.set_pub_robot_pose(780, 100, 130), "pub 780/100/135"),
-            (lambda: env.set_pub_robot_pose(780, 100, 135), "pub 780/100/135"),
-            (lambda: env.set_enemy_sub_pose(50, 450, 0), "enem 50/540/0"),
-            (lambda: env.set_enemy_sub_pose(50, 450, 5), "enem 50/540/0")
-                       ]
-        self.strat_class_or_tup, self.strat = None, None
-        self.printed_help = False
-        self.help_key = 'h'
-        self.buttons = "qwerasdf"
+# class StratChooser(Robot):
+#
+#     # (void_func, String)
+#     # Class
+#
+#     def __init__(self, env, team, bottom_left, angle=0):
+#         Robot.__init__(self, env, team, bottom_left, angle)
+#         # self.controls = "01233456789"
+#         self.strats = [Attack, DoNothing, BreakLine, SpinAndFire, OnlyReload, GetDefenseBuff, Chase, Patrol]
+#         self.strat_class_or_tup, self.strat = None, None
+#         self.switch_strat(self.strats[0])
+#         self.printed_help = False
+#         self.help_key = '0'
+#         self.buttons = "123456789"
+#
+#     def switch_strat(self, tup_or_class):
+#         self.strat_class_or_tup = tup_or_class
+#         if type(tup_or_class) == tuple:
+#             self.strat = tup_or_class[0]()
+#         else:
+#             self.strat = tup_or_class()
+#
+#     def strat_get_string(self, tup_or_class):
+#         """ is either a tuple of function and string OR is just a class"""
+#         if type(tup_or_class) == tuple:
+#             return tup_or_class[1]
+#         else:
+#             return tup_or_class.__name__
+#
+#     def get_strategy(self):
+#         strats = self.strats
+#         strats = strats[:len(self.buttons)]
+#         # commands = dict([(str(i + 1), v) for i, v in enumerate(strats)])
+#         commands = dict([(self.buttons[i], self.strats[i]) for i in range(min(len(self.buttons), len(self.strats)))])
+#
+#         if keyboard.is_pressed(self.help_key):
+#             if not self.printed_help:
+#                 self.printed_help = True
+#                 print(self.help_key + " - print strats")
+#                 for i in commands:
+#                     print(i + " - " + self.strat_get_string(commands[i]))
+#         else:
+#             for i in commands:
+#                 if keyboard.is_pressed(i):
+#                     if self.strat_class_or_tup != commands[i]:
+#                         self.printed_help = False
+#                         print("Switched to " + self.strat_get_string(commands[i]))
+#                         self.switch_strat(commands[i])
+#         return self.strat
 
 
-    def switch_strat(self, tup_or_class):
-        self.strat_class_or_tup = tup_or_class
-        if type(tup_or_class) == tuple:
-            tup_or_class[0]() # function
-        else:
-            self.strat = tup_or_class() #choooses strat
+# class EnvCommands(StratChooser):
+#
+#     def __init__(self, env, team, bottom_left, angle=0):
+#         Robot.__init__(self, env, team, bottom_left, angle)
+#         # self.controls = "01233456789"
+#         self.strats = [#DoNothing, BreakLine, Patrol, OnlyReload,
+#                        (lambda: env.add_temp_obstacles([(400,250,50,50)]), 'env.add_temp_obstacles([(400,250,50,50)])'),
+#                        (lambda: env.add_temp_obstacles([(400, 250, 50, 50),
+#                                                         (400, 310, 50, 50),
+#                                                         (400, 190, 50, 50),
+#                                                         (400, 370, 50, 50),
+#                                                         (400, 130, 50, 50)]), 'env.add_temp_obstacles([(400,250,50,50)])'),
+#             (lambda: env.set_pub_robot_pose(780, 100, 130), "pub 780/100/135"),
+#             (lambda: env.set_pub_robot_pose(780, 100, 135), "pub 780/100/135"),
+#             (lambda: env.set_enemy_sub_pose(50, 450, 0), "enem 50/540/0"),
+#             (lambda: env.set_enemy_sub_pose(50, 450, 5), "enem 50/540/0")
+#                        ]
+#         self.strat_class_or_tup, self.strat = None, None
+#         self.printed_help = False
+#         self.help_key = 'h'
+#         self.buttons = "qwerasdf"
+#
+#
+#     def switch_strat(self, tup_or_class):
+#         self.strat_class_or_tup = tup_or_class
+#         if type(tup_or_class) == tuple:
+#             tup_or_class[0]() # function
+#         else:
+#             self.strat = tup_or_class() #choooses strat
 
 
-class KeyboardRobot(Robot):
-    strategy_id = 2
-
-    def __init__(self, controls, env, team, bottom_left, angle=0, ignore_angle=False):
-        Robot.__init__(self, env, team, bottom_left, angle)
-        self.controls = controls
-        self.pygame_rendering = env.pygame_rendering
-        if env.rendering:
-            self.strat = KeyboardPyglet(self.controls, ignore_angle)
-        elif env.pygame_rendering:
-            self.strat = KeyboardPygame(self.controls, ignore_angle)
-            env.keyboard_robot = self
-            env.listening = list(controls)
-            self.actions = []
-
-    def handle_key(self, key):
-        if key in self.controls:
-            if key in self.actions:
-                self.actions.remove(key)
-            else:
-                self.actions.append(key)
-
-    def get_strategy(self):
-        # print(self.team.name + ": Point(x,y), angle: ",
-        # 	  "Point(%f, %f), %f" % (self.bottom_left.x, self.bottom_left.y, self.angle))
-        if self.pygame_rendering:
-            self.strat.set_instructions(self.actions)
-        return self.strat
+# class KeyboardRobot(Robot):
+#     strategy_id = 2
+#
+#     def __init__(self, controls, env, team, bottom_left, angle=0, ignore_angle=False):
+#         Robot.__init__(self, env, team, bottom_left, angle)
+#         self.controls = controls
+#         self.pygame_rendering = env.pygame_rendering
+#         if env.rendering:
+#             self.strat = KeyboardPyglet(self.controls, ignore_angle)
+#         elif env.pygame_rendering:
+#             self.strat = KeyboardPygame(self.controls, ignore_angle)
+#             env.keyboard_robot = self
+#             env.listening = list(controls)
+#             self.actions = []
+#
+#     def handle_key(self, key):
+#         if key in self.controls:
+#             if key in self.actions:
+#                 self.actions.remove(key)
+#             else:
+#                 self.actions.append(key)
+#
+#     def get_strategy(self):
+#         # print(self.team.name + ": Point(x,y), angle: ",
+#         # 	  "Point(%f, %f), %f" % (self.bottom_left.x, self.bottom_left.y, self.angle))
+#         if self.pygame_rendering:
+#             self.strat.set_instructions(self.actions)
+#         return self.strat
 
 
 class TrainingRobot(Robot):
