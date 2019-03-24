@@ -57,7 +57,7 @@ class RobomasterEnv(gym.Env):
 
         # Initialize robots
         # my_robot = AttackRobot(self, BLUE, Point(780, 100), 135)
-        my_robot = StratChooser(self, BLUE, Point(780, 100), 135)
+        my_robot = AttackRobot(self, BLUE, Point(780, 100), 135)
         enemy_robot = DummyRobot(self, RED, Point(50, 450), 0)
         # enemy_robot = KeyboardRobot("JKLI,./", self, RED, Point(50, 450), 0, ignore_angle=True)
 
