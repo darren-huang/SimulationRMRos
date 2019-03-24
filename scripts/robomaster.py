@@ -71,8 +71,8 @@ class RobomasterEnv(gym.Env):
         # my_robot = AttackRobot(self, BLUE, Point(365.917389, 355.968720), 312.700132)
         # enemy_robot = KeyboardRobot("ASDWOPR", self, RED, Point(419.475727, 80.330731), 132.700132, ignore_angle=True)
 
-        my_robot.load(40)
-        enemy_robot.load(40)
+        my_robot.load(100)
+        enemy_robot.load(100)
         self.characters['robots'] = [my_robot, enemy_robot]
 
         # my_robot2 = AttackRobot(self, BLUE, Point(20, 100), 0)

@@ -15,6 +15,22 @@ from pid_controller.msg import DynObstacleArray, DynObstacle
 
 env = gym.make('Robomaster-v0').unwrapped  # GLOBAL
 
+#  TODO #######################   for Zhongyu   ################################
+# Before Starting
+#  Check line 99, check line 100, make sure the names of the topics providing robot odometry is correct
+#
+# How to Run
+#  Run this python file like before,
+#      program should publish an "attack path" will move to enemy until it is able to fire at enemy
+#      Press '0' key on the simulation - terminal should print out other strategies to pick for the robot
+#
+# If you get bugs:
+#  Check ros_to_sim_yaw and sim_to_ros_yaw -> should translate angles with different origins (also ros is radians, sim is degrees)
+#
+#
+#
+#
+
 
 # transforms x,y ROS -> Sim // given that ROS gives origin top right, Sim gives origin bottom left
 def ros_to_sim_x(x):
