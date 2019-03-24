@@ -243,12 +243,17 @@ class Move(Action):
 
 
     def set_target_point(self, target_point, recompute, force_compute=False, backups = []):
+        new_target_points = [target_point] if target_point else []
+        new_target_points += backups
 
+        # force compute OR (recompute and new input)
         if force_compute or \
-                (recompute and len(self.target_points) > 0 and not self.target_points[0].float_equals(target_point)):
+                recompute and \
+                (len(self.target_points) != len(new_target_points) or
+                not all([self.target_points[i].float_equals(new_target_points[i]) for i in range(len(new_target_points))])):
             self.path = None
-        self.target_points = [target_point] if target_point else []
-        self.target_points += backups
+
+        self.target_points = new_target_points
 
     def resolve(self, robot):
         if len(self.target_points) == 0 or robot.center.float_equals(self.target_points[0]):
@@ -257,15 +262,14 @@ class Move(Action):
 
         #check if need to recalc path
         self.counter += 1
-        if self.counter >= self.counter_max:
+        if self.counter >= self.counter_max or self.path is None:
             self.counter = 0
             self.path = self.compute_path(robot)
+            if robot.env.publisher_robot == robot:
+                robot.env.path_to_pub = self.path
+                robot.env.ready_to_pub = True
 
-        # init path
         if not self.path:
-            self.path = self.compute_path(robot)
-
-        if self.path == None:
             return
 
         #update waypoint
@@ -274,19 +278,24 @@ class Move(Action):
             if len(self.path) > 2 or robot.env.direct_reachable_curr_angle(robot.center, self.path[-1], robot):
                 self.path = self.path[1:]
 
-        # print(self.path[0])
-
         #move to first waypoint of path
         #  and robot.env.direct_reachable_curr_angle(robot.center, self.path[0], robot)
-        if (len(self.path) > 0):
+        if not robot.env.ros_control and (len(self.path) > 0):
             return MoveAtAngle(0, min(robot.center.dis(self.path[0]),
                    robot.max_speed), robot.angle_to(self.path[0])).resolve(robot)
 
     def compute_path(self, robot):
-        for pt in self.target_points:
-            path = full_astar(pt, robot)
-            if path is not None:
-                return path
+        if len(self.target_points) > 0:
+            path1 = full_astar(self.target_points[0], robot)
+            if path1 and path1[-1].float_equals(self.target_points[0]):
+                return path1
+            for pt in self.target_points[1:]:
+                path = full_astar(pt, robot)
+                if path is not None and path[-1].float_equals(pt):
+                    return path
+            return path1
+
+
 
 
 # WAITING ON BETTER PATH ALGORITHM
@@ -304,13 +313,13 @@ def full_astar(to, robot, closest_point_try= False):
     points = env.network_points + [robot.center, to]
     closest_point, min_dis = None, 9999
 
-    extra_ignore = []
+    extra_ignore = [] #find what points to ignore
     for r in env.characters['robots']:
         if r.center.float_equals(to):
             extra_ignore = [r]
             break
 
-    # remove illegal edges
+    # find illegal edges
     for r in env.characters['robots']:
         if r is robot:
             continue
@@ -320,6 +329,16 @@ def full_astar(to, robot, closest_point_try= False):
                 p_j = points[j_id]
                 if master.has_edge(p_i.id, p_j.id) and not r.blocks_path_curr_angle(p_i, p_j, robot):
                     removed_weighted_edges.append((p_i.id, p_j.id, master[p_i.id][p_j.id]['weight'])) # save weight
+
+    # more illegal with temp
+    for obst in env.get_temp_obstacles():
+        print(obst)
+        points_in_radius = get_network_points(env.network_points, obst)  # TODO make parameter for illegal edge collision
+        for p_i in points_in_radius:
+            for j_id in list(master.adj[p_i.id]):
+                p_j = points[j_id]
+                if master.has_edge(p_i.id, p_j.id) and not obst.blocks_path_curr_angle(p_i, p_j, robot):
+                    removed_weighted_edges.append((p_i.id, p_j.id, master[p_i.id][p_j.id]['weight']))  # save weight
 
     # for all nodes visible to robot.center and to-point, add an edge + weight
     for p in env.network_points:
@@ -347,23 +366,20 @@ def full_astar(to, robot, closest_point_try= False):
             continue
 
     # search for astar path, if path not found, move to the closest point on the graph to the to-point
-    try:
-        path = nx.astar_path(master, fr_id, to_id)
-    except nx.NetworkXNoPath as e:
+    move_to_priority = sorted(list(master.nodes), key=lambda n: points[n].dis(to))
+    path_dict = nx.single_source_dijkstra_path(master, fr_id)
+    for temp_to_id in move_to_priority:
+        if temp_to_id in path_dict:
+            path = path_dict[temp_to_id]
+            break
+    else:
+        print("CAN'T REACH GOAL AND ANYPOINT ON GRAPH")
         master.add_weighted_edges_from(removed_weighted_edges)
-        removed_weighted_edges = []
         # master.remove_edge(robot.team.extra_weighted_edge[0], robot.team.extra_weighted_edge[1]) #TODO
         master.remove_node(fr_id)
         master.remove_node(to_id)
-        if closest_point_try:
-            print("CAN'T REACH BOTH THE GOAL AND CLOSEST POINT")
-            return
-        elif closest_point:
-            return full_astar(closest_point, robot, closest_point_try = True)
         return None
 
-    # display options
-    # display_edges(points, env) # renders the WHOLE graph
     if env.rendering:
         display_path(path, points, to, env) # renders the planned path
 
@@ -374,9 +390,9 @@ def full_astar(to, robot, closest_point_try= False):
     return [points[path[i]] for i in range(1,len(path))] # remove current robot point
 
 
-def get_network_points(points, robot):
-    env = robot.env
+def get_network_points(points, robot, distance = 140):
+    # env = robot.env
     center = robot.center
-    return [p for p in points if p.dis(center) < 140]
+    return [p for p in points if p.dis(center) < distance]
    
 

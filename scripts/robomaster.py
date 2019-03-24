@@ -27,8 +27,11 @@ class RobomasterEnv(gym.Env):
     joystick_robot = False
 
     def __init__(self):
-        # Ros temp objects
+        # Ros
         self.num_temp_obstacles = 0
+        self.ready_to_pub = False
+        self.path_to_pub = None
+        self.ros_control = False
 
         # initialize robot movement parameters
         Move.ticks_until_astar_recalc = 25
@@ -54,8 +57,15 @@ class RobomasterEnv(gym.Env):
 
         # Initialize robots
         # my_robot = AttackRobot(self, BLUE, Point(780, 100), 135)
-        my_robot = DummyRobot(self, BLUE, Point(780, 100), 135)
-        enemy_robot = KeyboardRobot("ASDWOPR", self, RED, Point(50, 400), 90, ignore_angle=True)
+        my_robot = StratChooser(self, BLUE, Point(780, 100), 135)
+        enemy_robot = KeyboardRobot("JKLI,./", self, RED, Point(50, 450), 0, ignore_angle=True)
+
+        self.publisher_robot = my_robot
+        self.enemy_robot_subscriber = enemy_robot
+
+        # none_team = Team("none_team", self.pygame_rendering)
+        # commands_ent = EnvCommands(self, none_team, Point(50000, 45000), 0)
+        self.commands_ent = None #commands_ent
 
         # bugged spot with closest point unreachable
         # my_robot = AttackRobot(self, BLUE, Point(365.917389, 355.968720), 312.700132)
@@ -271,16 +281,18 @@ class RobomasterEnv(gym.Env):
         for char in self.actables():
             char.act()
 
-        # TODO printing for robots
+        if self.commands_ent:
+            self.commands_ent.act()
+
+        #TODO printing for robots
         # for robot in self.characters['robots']:
         #     if robot.team.name == "RED":
-        #         print(robot.team.name + ": low_left = " + str(robot.bottom_left) +
-        #               " || high_right = " + str(robot.bottom_left.move(robot.width, robot.height)))
-                # closest_point = min(self.network_points, key=lambda x: robot.center.dis(x))
-                # print(robot.team.name + " is closest to: " + str(closest_point))
-                # geom = rendering.Circle(closest_point, 5)
-                # geom.set_color(0,128,0)
-                # self.viewer.add_onetime(geom)
+        #         # print(robot.team.name + ": " + str(robot.center))
+        #         closest_point = min(self.network_points, key=lambda x: robot.center.dis(x))
+        #         print(robot.team.name + " is closest to: " + str(closest_point))
+        #         geom = rendering.Circle(closest_point, 5)
+        #         geom.set_color(0,128,0)
+        #         self.viewer.add_onetime(geom)
 
         self.state = self.generate_state()
         if self.rendering:
@@ -470,6 +482,9 @@ class RobomasterEnv(gym.Env):
             self.stop_rendering()
             self.init_rendering()
 
+    def get_temp_obstacles(self):
+        return self.characters['obstacles'][len(self.characters['obstacles']) - self.num_temp_obstacles:]
+
     def add_temp_obstacles(self, list_of_obstacles):
         """
         :param list_of_obstacles:  list of tuples: (x, y, width, height)
@@ -482,3 +497,25 @@ class RobomasterEnv(gym.Env):
         self.num_temp_obstacles = len(list_of_obstacles)
         self.characters['obstacles'].extend(
             [Obstacle(Point(x - (width/2), y - (height/2)), width, height) for x, y, width, height in list_of_obstacles])
+
+    def ready_to_publish(self):
+        return self.ready_to_pub
+
+    def compute_path_to_publish(self):
+        """
+        :returns: list of tuples [(new_x, new_y, new_yaw)]
+        default yaw, ie. angle from one point to the next
+        """
+        self.ready_to_pub = False #treat publishing message as a queue
+        if not self.path_to_pub: #ensure not None and not empty
+            return []
+        pts = [self.publisher_robot.center] + self.path_to_pub
+        return [(pts[i].x, pts[i].y,
+                 to_degree(np.arctan2((pts[i].y-pts[i-1].y),(pts[i].x-pts[i-1].x)))) for i in range(1, len(pts))]
+
+    def set_pub_robot_pose(self, x, y, yaw):
+        """ give SIM verisons of x,y,yaw"""
+        self.publisher_robot.set_pose_by_center(x, y, yaw)
+
+    def set_enemy_sub_pose(self, x, y, yaw):
+        self.enemy_robot_subscriber.set_pose_by_center(x, y, yaw)

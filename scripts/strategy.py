@@ -20,7 +20,7 @@ class Strategy:
     def __init__(self):
         self.move = Move(None) #None means there is no where  move to, .resolve will do nothing
         self.auto_aim = True
-        self.auto_shoot = True
+        self.auto_shoot = False #TODO change for real robot
         self.auto_rotate = False
 
     def move_to(self, target_point, recompute, force_compute = False, backups = []):
@@ -31,8 +31,7 @@ class Strategy:
                             true && target changes-> find new path (does nothing if target_point is null)
         :param force_compute: if true, always recompute path, even if target_point is the same
         """
-        if target_point:
-            self.move.set_target_point(target_point, recompute, force_compute=force_compute, backups=backups)
+        self.move.set_target_point(target_point, recompute, force_compute=force_compute, backups=backups)
 
     def force_path_recompute(self):
         self.move.path = None
@@ -80,11 +79,33 @@ class Strategy:
 
 
 class Patrol(Strategy):
+    rhombus = [Point(80, 335), Point(410, 360), Point(720, 165), Point(390, 140)]
+    top_line = [Point(600, 350), Point(250, 350)]
+    right_line = [Point(750, 350), Point(750, 100)]
+    lines = [rhombus, top_line, right_line]
 
-    key_points = [Point(0, 0)]
+    def __init__(self):
+        Strategy.__init__(self)
+        self.patrol_path = Patrol.rhombus # defualt
+        self.pt_num = None
+
+    def set_patrol_number(self, patrol_number):
+        self.patrol_path = self.lines[patrol_number]
+
+    def set_closest_pt_num(self, robot):
+        self.pt_num = self.patrol_path.index(min(self.patrol_path, key=lambda x: robot.center.dis(x)))
 
     def decide(self, robot):
-        pass
+        if self.pt_num is None:
+            self.set_closest_pt_num(robot)
+
+        reorder = self.patrol_path[self.pt_num:]+self.patrol_path[:self.pt_num]
+        for pt in reorder:
+            if robot.center.float_equals(pt):
+                self.pt_num = (self.patrol_path.index(pt) + 1) % len(self.patrol_path)
+
+        self.move_to(self.patrol_path[self.pt_num], recompute=True,
+                     backups=self.patrol_path[self.pt_num+1:]+self.patrol_path[:self.pt_num])
 
 
 class DoNothing(Strategy):
