@@ -89,6 +89,13 @@ def pub_robo_enemy_odom_CB(msg):
     sim_x, sim_y, sim_yaw = ros_to_sim_x(x), ros_to_sim_y(y), ros_to_sim_yaw(yaw)
     env.set_enemy_sub_pose(sim_x, sim_y, sim_yaw)
 
+def set_ros_goal_point_CB(msg):
+    pos = msg.pose.pose.position
+    x, y = pos.x, pos.y
+    yaw = euler_from_quaternion(msg.pose.pose.orientation)[2]
+    sim_x, sim_y, sim_yaw = ros_to_sim_x(x), ros_to_sim_y(y), ros_to_sim_yaw(yaw)
+    env.set_ros_goal_point(sim_x, sim_y, sim_yaw)
+
 def main():
     total_rounds = int(env.full_time / env.tau)
     joystick_control = True
@@ -97,6 +104,7 @@ def main():
     rospy.Subscriber("/controller/dynamic_obstalces", DynObstacleArray, dynamic_obstacles_CB)
     rospy.Subscriber('/odom', Odometry, pub_robo_odom_CB)  # TODO check topic name - our robot
     rospy.Subscriber('/enemy_odom', Odometry, pub_robo_enemy_odom_CB)  # TODO check topic name - enemy robot
+    rospy.Subscriber('/set_goal_pt', Odometry, set_ros_goal_point_CB)  # TODO check topic name - set_goal_pt topic
     rate = rospy.Rate(10)
 
     controlled_robot = "BLUE"

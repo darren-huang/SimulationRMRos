@@ -32,6 +32,8 @@ class RobomasterEnv(gym.Env):
         self.ready_to_pub = False
         self.path_to_pub = None
         self.ros_control = False
+        self.ros_goal_point = None
+        self.ros_goal_yaw = 0
 
         # initialize robot movement parameters
         Move.ticks_until_astar_recalc = 25
@@ -57,7 +59,7 @@ class RobomasterEnv(gym.Env):
 
         # Initialize robots
         # my_robot = AttackRobot(self, BLUE, Point(780, 100), 135)
-        my_robot = AttackRobot(self, BLUE, Point(780, 100), 135)
+        my_robot = RosListenRobot(self, BLUE, Point(780, 100), 135)
         enemy_robot = DummyRobot(self, RED, Point(50, 450), 0)
         # enemy_robot = KeyboardRobot("JKLI,./", self, RED, Point(50, 450), 0, ignore_angle=True)
 
@@ -511,8 +513,11 @@ class RobomasterEnv(gym.Env):
         if not self.path_to_pub: #ensure not None and not empty
             return []
         pts = [self.publisher_robot.center] + self.path_to_pub
-        return [(pts[i].x, pts[i].y,
+        ret = [(pts[i].x, pts[i].y,
                  to_degree(np.arctan2((pts[i].y-pts[i-1].y),(pts[i].x-pts[i-1].x)))) for i in range(1, len(pts))]
+        if ret:
+            ret[-1] = (ret[-1][0], ret[-1][1], self.ros_goal_yaw)
+        return ret
 
     def set_pub_robot_pose(self, x, y, yaw):
         """ give SIM verisons of x,y,yaw"""
@@ -520,3 +525,7 @@ class RobomasterEnv(gym.Env):
 
     def set_enemy_sub_pose(self, x, y, yaw):
         self.enemy_robot_subscriber.set_pose_by_center(x, y, yaw)
+
+    def set_ros_goal_point(self, x, y, sim_yaw):
+        self.ros_goal_point = Point(x, y)
+        self.ros_goal_yaw = sim_yaw

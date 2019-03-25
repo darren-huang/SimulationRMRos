@@ -211,6 +211,12 @@ class Attack(Strategy):
             # return Move(loader.loading_point)
 
 
+class RosListen(Strategy):
+
+    def decide(self, robot):
+        return self.move_to(robot.env.ros_goal_point, recompute=False)
+
+
 class AttackWithR(Strategy):
     pass
 

@@ -733,6 +733,13 @@ class AttackRobot(Robot):
         self.default_strat = Attack()
 
 
+class RosListenRobot(Robot):
+
+    def __init__(self, env, team, bottom_left, angle=0):
+        Robot.__init__(self, env, team, bottom_left, angle)
+        self.default_strat = RosListen()
+
+
 class AttackWithRadiusRobot(Robot):
     pass
 
