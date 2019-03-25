@@ -72,7 +72,7 @@ def make_posed_stamped(sim_x, sim_y, sim_angle):
 def dynamic_obstacles_CB(dynObstacles):
     rospy.loginfo("msgs:{}".format(dynObstacles))
     env.add_temp_obstacles(
-        [(ros_to_sim_x(obj.x), ros_to_sim_y(obj.y), obj.width, obj.height) for obj in dynObstacles.lists])
+        [(ros_to_sim_x(obj.x), ros_to_sim_y(obj.y), obj.width*100, obj.height*100) for obj in dynObstacles.lists])
 
 
 def pub_robo_odom_CB(msg):
